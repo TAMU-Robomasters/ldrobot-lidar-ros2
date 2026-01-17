@@ -38,7 +38,7 @@ def generate_launch_description():
     rviz2_config = os.path.join(
         get_package_share_directory('ldlidar_node'),
         'config',
-        'both_ldlidar.rviz'
+        'ldlidar.rviz'
     )
 
     # RVIZ2 node
@@ -61,6 +61,17 @@ def generate_launch_description():
         }.items()
     )
 
+    # Include LDLidar with lifecycle manager launch
+    ldlidar2_launch = IncludeLaunchDescription(
+        launch_description_source=PythonLaunchDescriptionSource([
+            get_package_share_directory('ldlidar_node'),
+            '/launch/ldlidar2_with_mgr.launch.py'
+        ]),
+        launch_arguments={
+            'node_name': '2'
+        }.items()
+    )
+
     # Define LaunchDescription variable
     ld = LaunchDescription()
 
@@ -72,5 +83,7 @@ def generate_launch_description():
 
     # Call LDLidar launch
     ld.add_action(ldlidar_launch)
+    ld.add_action(ldlidar2_launch)
+
 
     return ld

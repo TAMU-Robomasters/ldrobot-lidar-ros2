@@ -14,12 +14,23 @@
         </visual>
     </link>
 
+    <!-- right lidar -->
     <joint name="ldlidar_link_joint" type="fixed">
         <parent link="ldlidar_base"/>
         <child link="ldlidar_link"/>
-        <origin xyz="0 0 0.02745" rpy="0 0 0" />
+        <origin xyz="0.203324 0 0.123605" rpy="3.14 0 0" />
     </joint>
 
-    <link name="ldlidar_link" />
+    <link name="ldlidar_link"/>
+
+
+    <!-- left lidar -->
+    <joint name="ldlidar2_link_joint" type="fixed">
+        <parent link="ldlidar_base"/>
+        <child link="ldlidar2_link"/>
+        <origin xyz="-0.203324, 0, 0.1236055" rpy="3.14 0 0" />
+    </joint>
+
+    <link name="ldlidar2_link"/>
 
 </robot>

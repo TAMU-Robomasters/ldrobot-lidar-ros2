@@ -30,7 +30,7 @@ def generate_launch_description():
     # Launch arguments
     declare_node_name_cmd = DeclareLaunchArgument(
         'node_name',
-        default_value='ldlidar_node',
+        default_value='ldlidar2_node',
         description='Name of the node'
     )
 
@@ -54,7 +54,7 @@ def generate_launch_description():
     ldlidar_launch = IncludeLaunchDescription(
         launch_description_source=PythonLaunchDescriptionSource([
             get_package_share_directory('ldlidar_node'),
-            '/launch/ldlidar_with_mgr.launch.py'
+            '/launch/ldlidar2_with_mgr.launch.py'
         ]),
         launch_arguments={
             'node_name': node_name
