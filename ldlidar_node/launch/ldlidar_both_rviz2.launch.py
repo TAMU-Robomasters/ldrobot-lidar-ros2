@@ -17,7 +17,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -38,7 +38,7 @@ def generate_launch_description():
     rviz2_config = os.path.join(
         get_package_share_directory('ldlidar_node'),
         'config',
-        'ldlidar.rviz'
+        'both_lidar_simple.rviz'  # Using simple config to avoid potential segfault issues
     )
 
     # RVIZ2 node
@@ -50,6 +50,11 @@ def generate_launch_description():
         arguments=[["-d"], [rviz2_config]]
     )
 
+    # Note: `robot_state_publisher` is launched inside each bringup include
+    # (ldlidar_bringup.launch.py). Do not start an additional global rsp here
+    # to avoid duplicate node names and TF conflicts.
+
+
     # Include LDLidar with lifecycle manager launch
     ldlidar_launch = IncludeLaunchDescription(
         launch_description_source=PythonLaunchDescriptionSource([
@@ -57,6 +62,7 @@ def generate_launch_description():
             '/launch/ldlidar_with_mgr.launch.py'
         ]),
         launch_arguments={
+            'node_namespace': '',
             'node_name': node_name
         }.items()
     )
@@ -68,7 +74,8 @@ def generate_launch_description():
             '/launch/ldlidar2_with_mgr.launch.py'
         ]),
         launch_arguments={
-            'node_name': '2'
+            'node_namespace': 'ldlidar2',
+            'node_name': 'ldlidar2_node'
         }.items()
     )
 
@@ -78,12 +85,22 @@ def generate_launch_description():
     # Launch arguments
     ld.add_action(declare_node_name_cmd)
 
-    # Launch Nav2 Lifecycle Manager
-    ld.add_action(rviz2_node)
-
-    # Call LDLidar launch
+    # Call LDLidar launch first
     ld.add_action(ldlidar_launch)
     ld.add_action(ldlidar2_launch)
+
+    # Launch odom_puller which reads odometry and broadcasts odom -> ldlidar_base
+    odom_puller_node = Node(
+        package='py_pubsub',
+        executable='odom_puller',
+        name='odom_puller',
+        output='screen'
+    )
+    ld.add_action(odom_puller_node)
+
+    # Delay RViz2 start to allow lidar nodes to initialize properly
+    # Increase this delay if frames still aren't ready
+    ld.add_action(TimerAction(period=5.0, actions=[rviz2_node]))
 
 
     return ld
