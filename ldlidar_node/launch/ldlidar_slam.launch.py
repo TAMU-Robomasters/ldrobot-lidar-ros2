@@ -80,13 +80,12 @@ def generate_launch_description():
         }.items()
     )
 
-    # Fake odom publisher
-    fake_odom = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_transform_publisher',
-        output='screen',
-        arguments=['0', '0', '0', '0', '0', '0', 'odom', 'ldlidar_base']
+    # Odometry + TF from UART reader
+    odom_puller = Node(
+        package='py_pubsub',
+        executable='odom_puller',
+        name='odom_puller',
+        output='screen'
     )
 
     # RVIZ2 settings
@@ -114,8 +113,8 @@ def generate_launch_description():
     # Launch SLAM Toolbox node
     ld.add_action(slam_toolbox_node)
 
-    # Launch fake odom publisher node
-    ld.add_action(fake_odom)
+    # Launch odometry publisher node
+    ld.add_action(odom_puller)
 
     # Call LDLidar launch
     ld.add_action(ldlidar_launch)
